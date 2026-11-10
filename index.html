@@ -227,6 +227,12 @@ form .btn{margin-top:14px;width:100%;opacity:.45;cursor:not-allowed}
   .kgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .mosaic{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
+@media (max-aspect-ratio:1/1){
+  .endimg{background:var(--night)}
+  .endbg{display:none}
+  .endimg .endfg{top:68px;bottom:auto;height:auto;aspect-ratio:1672/941;object-fit:cover!important;-webkit-mask-image:linear-gradient(180deg,#000 72%,transparent);mask-image:linear-gradient(180deg,#000 72%,transparent)}
+  .stick .shade{background:linear-gradient(180deg,rgba(8,10,14,.5) 0%,transparent 9%)}
+}
 @media (max-width:640px){
   .intro .disp{font-size:clamp(46px,13.5vw,84px)}
   .room h2,.endcap .disp{font-size:clamp(40px,12vw,64px)}
@@ -489,8 +495,13 @@ const tiny=document.createElement('canvas');tiny.width=48;tiny.height=27;const t
 function ok(im){return im&&im.complete&&im.naturalWidth}
 function nearest(i){for(let d=0;d<TOTAL;d++){if(ok(frames[i-d]))return frames[i-d];if(ok(frames[i+d]))return frames[i+d]}return null}
 function fit(im){const W=cv.width,H=cv.height,iw=im.naturalWidth,ih=im.naturalHeight;
-  const cover=W/H<=2.2&&W/H>=1.45; /* close to 16:9: fill the screen; otherwise show the whole frame over a blurred copy */
+  const cover=W/H<=2.2&&W/H>=1.45;
   if(cover){const s=Math.max(W/iw,H/ih);ctx.drawImage(im,(W-iw*s)/2,(H-ih*s)/2,iw*s,ih*s);return}
+  if(W<H){ /* phone upright: whole frame, full width, right under the header, solid ground below */
+    const dpr=W/cv.clientWidth, ox=16*dpr, top=Math.round(80*dpr), vw=W-2*ox, s=vw/iw, h=ih*s;
+    ctx.fillStyle='#0c1015';ctx.fillRect(0,0,W,H);ctx.drawImage(im,ox,top,vw,h);
+    const g=ctx.createLinearGradient(0,top+h*.72,0,top+h);g.addColorStop(0,'rgba(12,16,21,0)');g.addColorStop(1,'rgba(12,16,21,1)');ctx.fillStyle=g;ctx.fillRect(0,top+h*.72,W,h*.28+2);
+    ctx.fillStyle='#0c1015';ctx.fillRect(0,0,W,top);return}
   tctx.drawImage(im,0,0,48,27);const sc=Math.max(W/48,H/27);ctx.drawImage(tiny,(W-48*sc)/2,(H-27*sc)/2,48*sc,27*sc);
   ctx.fillStyle='rgba(8,10,14,.35)';ctx.fillRect(0,0,W,H);
   const s=Math.min(W/iw,H/ih);ctx.drawImage(im,(W-iw*s)/2,(H-ih*s)/2,iw*s,ih*s)}
